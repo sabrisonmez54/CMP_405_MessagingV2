@@ -37,12 +37,14 @@ public class MainWindow implements ActionListener {
     public static String message;
     private static Socket mySocket;
 
-    public MainWindow(String ipText, String portText) {
+    public MainWindow(String ipText, String portText) 
+    {
         ipName = ipText;
         portName = portText;
     }
 
-    public void display() {
+    public void display() 
+    {
         String appName = "IP: [ " + ipName + " ]  " + " Port: [ " + portName + " ] ";
         JFrame newFrame = new JFrame(appName);
 
@@ -60,10 +62,13 @@ public class MainWindow implements ActionListener {
         sendMessage.addActionListener(this);
 
         closeButton = new JButton("Close");
-        closeButton.addActionListener(new ActionListener() {
+        closeButton.addActionListener(new ActionListener() 
+        {
 
             @Override
-            public void actionPerformed(ActionEvent arg0) {
+            public void actionPerformed(ActionEvent arg0) 
+            {
+                mySocket.close();
                 System.exit(0);
             }
         });
@@ -99,53 +104,37 @@ public class MainWindow implements ActionListener {
         newFrame.setSize(500, 300);
         newFrame.setVisible(true);
         newFrame.setLocationRelativeTo(null);
+        //create Socket
+        mySocket = new Socket(Integer.parseInt(portName));
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-        // mySocket = new Socket(Integer.parseInt(portName));
-
-        // mySocket.send(messageBox.getText(),
-        // mySocket.getMyAddress(),
-        // mySocket.getMyPortNumber());
-
-        // DatagramPacket inPacket = null;
-        // do {
-        // inPacket = mySocket.receive();
-        // } while (inPacket == null);
-
-        // byte[] inBuffer = inPacket.getData();
-        // String inMessage = new String(inBuffer);
-        // InetAddress senderAddress = inPacket.getAddress();
-        // int senderPort = inPacket.getPort();
-        // messageBox.setText("");
-
-        // chatBox.append("\nReceived Message = " + inMessage);
-        // chatBox.append("\nSender Address = " + senderAddress.getHostAddress());
-        // chatBox.append("\nSender Port = " + senderPort);
-
-        // mySocket.close();
-
-        mySocket = new Socket(Integer.parseInt(portName));
-
-        message = messageBox.getText();
-        try {
-            sendAddress = InetAddress.getByName(ipName);
-        } catch (UnknownHostException e1) {
-            
-            e1.printStackTrace();
-        }
-			mySocket.send(message, sendAddress, 64000);
-            chatBox.append("message: "+message+"\n sent to: "+sendAddress+" with port: "+portName+" ");
-            messageBox.setText("");
-            
+    public void actionPerformed(ActionEvent e) 
+    {
+        //open receive thread
         packet = mySocket.receive();
         
-        if (packet != null) {
+         // if packet is received get message and display it    
+         if (packet != null) {
             byte[] inBuffer = packet.getData();
             message = new String(inBuffer);
-            chatBox.append(packet.getAddress() + "received this message: " + message + "\n");
+            message.replaceAll("\\s","");
+            chatBox.append("\n received this message: " + message + " from "+  packet.getAddress() + "\n");
         }
+
+        //get message
+        message = messageBox.getText();
+        try 
+        {//get address to send
+            sendAddress = InetAddress.getByName(ipName);
+        }
+        catch (UnknownHostException e1) 
+        {
+            e1.printStackTrace();
+        }
+        //send message, append to chatbox and clear message box
+			mySocket.send(message, sendAddress, 64000);
+            chatBox.append("\n message: "+message+ "was sent to: "+ sendAddress + " with the port number: "+portName+" \n");
+            messageBox.setText("");
     }
-    //192.168.1.104
 }

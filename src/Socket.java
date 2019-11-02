@@ -22,11 +22,11 @@ public class Socket {
 			new ConcurrentLinkedQueue<DatagramPacket>();
 	
 	public Socket(int myPortNumber) {
-		this.myPortNumber = myPortNumber;
-		
+		this.myPortNumber = myPortNumber;		
 		try {
 			this.myAddress = InetAddress.getLocalHost();
-		} catch (UnknownHostException uhe) {
+			this.mySocket = new DatagramSocket(myPortNumber, this.myAddress);
+		} catch (Exception uhe) {
 			uhe.printStackTrace();
 			System.exit(-1);
 		}
@@ -34,12 +34,12 @@ public class Socket {
 		MainWindow.chatBox.append("\nMy IP Address  = " + this.myAddress.getHostAddress());
 		MainWindow.chatBox.append("\nMy Port Number = " + this.myPortNumber);
 		
-		try {
-			this.mySocket = new DatagramSocket(myPortNumber, myAddress);
-		} catch (SocketException se) {
-			se.printStackTrace();
-			System.exit(-1);
-		}
+		// try {
+		// 	this.mySocket = new DatagramSocket(myPortNumber, myAddress);
+		// } catch (SocketException se) {
+		// 	se.printStackTrace();
+		// 	System.exit(-1);
+		// }
 		
 		this.receiveThread = new Thread(
 				new Runnable() {
@@ -73,7 +73,7 @@ public class Socket {
 	
 	public void receiveThreadMethod() {
 
-		MainWindow.chatBox.append("\nReceive Thread is Starting!!!!");
+		MainWindow.chatBox.append("\nReceive Thread is Starting!!!! \n" );
 		
 		try {
 			this.mySocket.setSoTimeout(50);
@@ -91,53 +91,58 @@ public class Socket {
 
 			DatagramPacket inPacket = new DatagramPacket(inBuffer, inBuffer.length);
 			
-			try {
-				this.mySocket.receive(inPacket);
-				this.messageQueue.add(inPacket);
+			try 
+			{
+				mySocket.receive(inPacket);
 				System.out.println("I received something");
+				messageQueue.add(inPacket);
 
-
-
-
-
-
-			} catch (SocketTimeoutException ste) {
+			} 
+			catch (SocketTimeoutException ste) 
+			{
 				// nothing to do
-			} catch (IOException ioe) {
+			} 
+			catch (IOException ioe) 
+			{
 				ioe.printStackTrace();
 				System.exit(-1);
 			}
 			
-		} while (receiveThreadShouldKeepRunning);
-		
+		} 
+		while (receiveThreadShouldKeepRunning);
 		System.out.println("Receive Thread is Exiting!!!!");
 	}
 
-	public DatagramPacket receive() {
+	public DatagramPacket receive() 
+	{
 		return this.messageQueue.poll();
 	}
 	
-	public void close() {
+	public void close() 
+	{
 		System.out.println("\nClosing Socket and Stopping Receive Thread");
 		this.receiveThreadShouldKeepRunning = false;
-		
-		try {
+	
+		try 
+		{
 			TimeUnit.MILLISECONDS.sleep(100);
-		} catch (InterruptedException ie) {
+		} 
+		catch (InterruptedException ie) 
+		{
 			ie.printStackTrace();
 			System.exit(-1);
 		}
-		
-		this.mySocket.close();
+		mySocket.close();
 		System.out.println("Socket Closed");
 	}
 
-
-	public int getMyPortNumber() {
+	public int getMyPortNumber() 
+	{
 		return this.myPortNumber;
 	}
 
-	public InetAddress getMyAddress() {
+	public InetAddress getMyAddress() 
+	{
 		return this.myAddress;
 	}
 }
