@@ -1,6 +1,10 @@
 import java.awt.LayoutManager;
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.ListIterator;
 
 import javax.swing.JLabel;
 import javax.swing.JButton;
@@ -18,18 +22,25 @@ public class Test implements ActionListener
 	private static JLabel 		portLabel;
 	private static JTextField 	portTextField;
 	private static JButton 		startButton;
-	
-	public static void setWindow()  
+
+	public static InetAddress myAddress;
+    public static InetAddress sendAddress;
+    public static DatagramPacket packet;
+    public static String message;
+    public static ArrayList<MainWindow> windowArray = new ArrayList<MainWindow>();
+	public static Socket mySocket = new Socket(64000);
+
+	public static void setWindow() 
 	{
 		ipLabel = new JLabel("IP address: ");
 		ipTextField = new JTextField(50);
 		portLabel = new JLabel("Port: ");
 		portTextField = new JTextField(50);
 		startButton = new JButton("Start");
-		
+
 		JPanel startPanel = new JPanel();
 
-		startPanel.add(ipLabel); 
+		startPanel.add(ipLabel);
 		startPanel.add(ipTextField);
 		startPanel.add(portLabel);
 		startPanel.add(portTextField);
@@ -42,45 +53,61 @@ public class Test implements ActionListener
 		startFrame.setVisible(true);
 		startFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		startButton.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e){
-				//System.out.println(ipTextField.getText());
-				//System.out.println(portTextField.getText());
- 
- 
-				MainWindow window = new MainWindow(ipTextField.getText(), portTextField.getText());
-				
+		startButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// System.out.println(ipTextField.getText());
+				// System.out.println(portTextField.getText());
+
+				MainWindow window = new MainWindow(ipTextField.getText(), portTextField.getText(), mySocket);
+				windowArray.add(window);
 				window.display();
-				startFrame.setVisible(false);
+				//startFrame.setVisible(false);
+				for (MainWindow mainWindow : windowArray) {
+					System.out.println(mainWindow.toString());
+				}
 		 }});
 	}
 	
 	public static void main(String[] args) 
 	{
 		setWindow();
+	
+		while(true){
+ 		//open receive thread
+        packet = mySocket.receive();
+        
+         // if packet is received get message and display it    
+		 if (packet != null) 
+		 {
+            byte[] inBuffer = packet.getData();
+            message = new String(inBuffer);
+			message.replaceAll("\\s","");
+			ListIterator<MainWindow> iter 
+			= windowArray.listIterator();
+			
+			if (iter.hasNext()){
+				MainWindow window = iter.next();
+				if(packet.getAddress().toString() == window.ipName 
+					&& Integer.toString(packet.getPort()) == window.portName)
+					{
+						window.chatBox.append(message);
+					}
+				
+				}else
+				{
+					String packetAdress = packet.getAddress().toString();
+					packetAdress.replaceAll("/", "");
+					String portAddress = Integer.toString(packet.getPort());
 
-		// mySocket = new Socket(64000);
-		
-		// mySocket.send("Hello Communication World!!!", 
-		// 			  mySocket.getMyAddress(), 
-		// 			  mySocket.getMyPortNumber());
-
-		// DatagramPacket inPacket = null;
-		// do {
-		// 	inPacket = mySocket.receive();
-		// } while (inPacket == null);
-		
-		// byte[] inBuffer = inPacket.getData();
-		// String inMessage = new String(inBuffer);
-		// InetAddress senderAddress = inPacket.getAddress();
-		// int senderPort = inPacket.getPort();
-		
-		// System.out.println();
-		// System.out.println("Received Message = " + inMessage);
-		// System.out.println("Sender Address   = " + senderAddress.getHostAddress());
-		// System.out.println("Sender Port      = " + senderPort);
-		
-		// mySocket.close();	
+					MainWindow newWindow = new MainWindow(packetAdress,portAddress, mySocket);
+					//newWindow = iter.next();
+					iter.add(newWindow);
+					newWindow.display();
+					newWindow.chatBox.append(message);
+					}
+			}
+           // chatBox.append("\n received this message: " + message + " from "+  packet.getAddress() + "\n");
+		}
 	}
 
 	@Override

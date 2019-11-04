@@ -22,28 +22,29 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 public class MainWindow implements ActionListener {
-    public static String ipName;
-    public static String portName;
+    public  String ipName;
+    public  String portName;
     public static JButton sendMessage;
     public static JButton closeButton;
     public static JTextField messageBox;
     public static JTextArea chatBox;
     public static JTextField usernameChooser;
 
-    public static Socket socket;
+
     public static InetAddress myAddress;
     public static InetAddress sendAddress;
     public static DatagramPacket packet;
     public static String message;
     private static Socket mySocket;
 
-    public MainWindow(String ipText, String portText) 
+    public MainWindow(String ipText, String portText, Socket socket) 
     {
         ipName = ipText;
         portName = portText;
+        mySocket = socket;
     }
 
-    public void display() 
+	public void display() 
     {
         String appName = "IP: [ " + ipName + " ]  " + " Port: [ " + portName + " ] ";
         JFrame newFrame = new JFrame(appName);
@@ -104,29 +105,18 @@ public class MainWindow implements ActionListener {
         newFrame.setSize(500, 300);
         newFrame.setVisible(true);
         newFrame.setLocationRelativeTo(null);
-        //create Socket
-        mySocket = new Socket(Integer.parseInt(portName));
     }
 
     @Override
     public void actionPerformed(ActionEvent e) 
     {
-        //open receive thread
-        packet = mySocket.receive();
-        
-         // if packet is received get message and display it    
-         if (packet != null) {
-            byte[] inBuffer = packet.getData();
-            message = new String(inBuffer);
-            message.replaceAll("\\s","");
-            chatBox.append("\n received this message: " + message + " from "+  packet.getAddress() + "\n");
-        }
 
         //get message
         message = messageBox.getText();
         try 
         {//get address to send
-            sendAddress = InetAddress.getByName(ipName);
+            sendAddress = InetAddress.getByName(ipName.substring(1));
+        
         }
         catch (UnknownHostException e1) 
         {
@@ -134,7 +124,7 @@ public class MainWindow implements ActionListener {
         }
         //send message, append to chatbox and clear message box
 			mySocket.send(message, sendAddress, 64000);
-            chatBox.append("\n message: "+message+ "was sent to: "+ sendAddress + " with the port number: "+portName+" \n");
+            chatBox.append("\n message: "+message+ " was sent to: "+ sendAddress + " with the port number: "+portName+" \n");
             messageBox.setText("");
     }
 }

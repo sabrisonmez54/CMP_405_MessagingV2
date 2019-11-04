@@ -31,8 +31,8 @@ public class Socket {
 			System.exit(-1);
 		}
 		
-		MainWindow.chatBox.append("\nMy IP Address  = " + this.myAddress.getHostAddress());
-		MainWindow.chatBox.append("\nMy Port Number = " + this.myPortNumber);
+		//MainWindow.chatBox.append("\nMy IP Address  = " + this.myAddress.getHostAddress());
+		//MainWindow.chatBox.append("\nMy Port Number = " + this.myPortNumber);
 		
 		// try {
 		// 	this.mySocket = new DatagramSocket(myPortNumber, myAddress);
@@ -73,7 +73,7 @@ public class Socket {
 	
 	public void receiveThreadMethod() {
 
-		MainWindow.chatBox.append("\nReceive Thread is Starting!!!! \n" );
+		System.out.println("\nReceive Thread is Starting!!!! \n" );
 		
 		try {
 			this.mySocket.setSoTimeout(50);
@@ -133,6 +133,7 @@ public class Socket {
 			System.exit(-1);
 		}
 		mySocket.close();
+		MainWindow.chatBox.append("Socket Closed");
 		System.out.println("Socket Closed");
 	}
 
