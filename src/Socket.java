@@ -31,16 +31,6 @@ public class Socket {
 			System.exit(-1);
 		}
 		
-		//MainWindow.chatBox.append("\nMy IP Address  = " + this.myAddress.getHostAddress());
-		//MainWindow.chatBox.append("\nMy Port Number = " + this.myPortNumber);
-		
-		// try {
-		// 	this.mySocket = new DatagramSocket(myPortNumber, myAddress);
-		// } catch (SocketException se) {
-		// 	se.printStackTrace();
-		// 	System.exit(-1);
-		// }
-		
 		this.receiveThread = new Thread(
 				new Runnable() {
 					public void run() {
@@ -65,6 +55,7 @@ public class Socket {
 		
 		try {
 			this.mySocket.send(outPacket);
+			System.out.println("Message sent");
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 			System.exit(-1);

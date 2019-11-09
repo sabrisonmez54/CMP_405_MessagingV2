@@ -61,10 +61,7 @@ public class Test implements ActionListener
 				MainWindow window = new MainWindow(ipTextField.getText(), portTextField.getText(), mySocket);
 				windowArray.add(window);
 				window.display();
-				//startFrame.setVisible(false);
-				for (MainWindow mainWindow : windowArray) {
-					System.out.println(mainWindow.toString());
-				}
+	
 		 }});
 	}
 	
@@ -81,33 +78,67 @@ public class Test implements ActionListener
 		 {
             byte[] inBuffer = packet.getData();
             message = new String(inBuffer);
-			message.replaceAll("\\s","");
+			
 			ListIterator<MainWindow> iter 
 			= windowArray.listIterator();
 			
 			if (iter.hasNext()){
 				MainWindow window = iter.next();
-				if(packet.getAddress().toString() == window.ipName 
-					&& Integer.toString(packet.getPort()) == window.portName)
-					{
-						window.chatBox.append(message);
-					}
+
+				String packetAdress = packet.getAddress().toString().substring(1);
+				String windowIp = window.ipName;
+				String packetPort =Integer.toString(packet.getPort());
+				String windowPort = window.portName;
+
+				//System.out.println(packetAdress  + windowIp) ;
 				
-				}else
+				if(packetAdress.equals(windowIp)){
+					if(packetPort.equals(windowPort)){
+						
+						if(window.equals(iter))
+						window.chatBox.append("Them: " + message.trim() + "\n");
+
+					
+					}
+				}
+				
+				else
 				{
-					String packetAdress = packet.getAddress().toString();
-					packetAdress.replaceAll("/", "");
+					MainWindow newWindow = new MainWindow(packetAdress,packetPort, mySocket);
+					//newWindow = iter.next();
+					iter.add(newWindow);
+					newWindow.display();
+					newWindow.chatBox.append("Them: " + message.trim() + "\n");
+					}  
+				
+			}
+			else
+				{
+					String packetAdress = packet.getAddress().toString().substring(1);
+					
 					String portAddress = Integer.toString(packet.getPort());
 
 					MainWindow newWindow = new MainWindow(packetAdress,portAddress, mySocket);
 					//newWindow = iter.next();
 					iter.add(newWindow);
 					newWindow.display();
-					newWindow.chatBox.append(message);
+					newWindow.chatBox.append("Them: " + message.trim() + "\n");
 					}
 			}
-           // chatBox.append("\n received this message: " + message + " from "+  packet.getAddress() + "\n");
 		}
+	}
+
+	public boolean checkWindow(String packetAdress,String windowIp, String packetPort, String windowPort){
+		if(packetAdress.equals(windowIp)){
+			if(packetPort.equals(windowPort)){
+			
+				//window.chatBox.append("\nThem: " + message.trim() + "\n");
+
+				return true;
+	
+			}
+		}
+		return false;
 	}
 
 	@Override

@@ -110,12 +110,11 @@ public class MainWindow implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) 
     {
-
         //get message
         message = messageBox.getText();
         try 
         {//get address to send
-            sendAddress = InetAddress.getByName(ipName.substring(1));
+            sendAddress = InetAddress.getByName(ipName.trim());
         
         }
         catch (UnknownHostException e1) 
@@ -123,8 +122,12 @@ public class MainWindow implements ActionListener {
             e1.printStackTrace();
         }
         //send message, append to chatbox and clear message box
+
+        System.out.println("Hello");
 			mySocket.send(message, sendAddress, 64000);
-            chatBox.append("\n message: "+message+ " was sent to: "+ sendAddress + " with the port number: "+portName+" \n");
+            chatBox.append("Me: "+message);
+            System.out.println( "Sent to " + sendAddress);
+            // " was sent to: "+ sendAddress + " with the port number: "+portName+" \n");
             messageBox.setText("");
     }
 }
