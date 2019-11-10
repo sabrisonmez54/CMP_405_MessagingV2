@@ -2,9 +2,12 @@ import java.awt.LayoutManager;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.ListIterator;
+import java.util.Map;
 
 import javax.swing.JLabel;
 import javax.swing.JButton;
@@ -27,7 +30,8 @@ public class Test implements ActionListener
     public static InetAddress sendAddress;
     public static DatagramPacket packet;
     public static String message;
-    public static ArrayList<MainWindow> windowArray = new ArrayList<MainWindow>();
+	public static ArrayList<MainWindow> windowArray = new ArrayList<MainWindow>();
+	private static Map<InetAddress, MainWindow> windowMap = new HashMap<InetAddress, MainWindow>();
 	public static Socket mySocket = new Socket(64000);
 
 	public static void setWindow() 
@@ -59,7 +63,14 @@ public class Test implements ActionListener
 				// System.out.println(portTextField.getText());
 
 				MainWindow window = new MainWindow(ipTextField.getText(), portTextField.getText(), mySocket);
-				windowArray.add(window);
+				try {
+					sendAddress  = InetAddress.getByName(ipTextField.getText());
+				} catch (UnknownHostException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				windowMap.put(sendAddress, window);
+				//windowArray.add(window);
 				window.display();
 	
 		 }});
@@ -79,67 +90,29 @@ public class Test implements ActionListener
             byte[] inBuffer = packet.getData();
             message = new String(inBuffer);
 			
-			ListIterator<MainWindow> iter 
-			= windowArray.listIterator();
 			
-			if (iter.hasNext()){
-				MainWindow window = iter.next();
+			String packetAdress = packet.getAddress().toString().substring(1);
+			String packetPort =Integer.toString(packet.getPort());
+			
 
-				String packetAdress = packet.getAddress().toString().substring(1);
-				String windowIp = window.ipName;
-				String packetPort =Integer.toString(packet.getPort());
-				String windowPort = window.portName;
-
+				if(windowMap.containsKey(packet.getAddress())){
+					MainWindow currentChat = windowMap.get(packet.getAddress());
+					currentChat.getChatArea().append("Them: " +message.trim() + "\n");
+				}
 				//System.out.println(packetAdress  + windowIp) ;
 				
-				if(packetAdress.equals(windowIp)){
-					if(packetPort.equals(windowPort)){
-						
-						if(window.equals(iter))
-						window.chatBox.append("Them: " + message.trim() + "\n");
-
-					
-					}
+				else{
+					MainWindow newWindow = new MainWindow(packetAdress,packetPort, mySocket);
+					windowMap.put(packet.getAddress(), newWindow);
+					newWindow.display();
+					newWindow.chatBox.append("Them: " + message.trim() + "\n");
 				}
 				
-				else
-				{
-					MainWindow newWindow = new MainWindow(packetAdress,packetPort, mySocket);
-					//newWindow = iter.next();
-					iter.add(newWindow);
-					newWindow.display();
-					newWindow.chatBox.append("Them: " + message.trim() + "\n");
-					}  
 				
 			}
-			else
-				{
-					String packetAdress = packet.getAddress().toString().substring(1);
-					
-					String portAddress = Integer.toString(packet.getPort());
-
-					MainWindow newWindow = new MainWindow(packetAdress,portAddress, mySocket);
-					//newWindow = iter.next();
-					iter.add(newWindow);
-					newWindow.display();
-					newWindow.chatBox.append("Them: " + message.trim() + "\n");
-					}
-			}
 		}
 	}
 
-	public boolean checkWindow(String packetAdress,String windowIp, String packetPort, String windowPort){
-		if(packetAdress.equals(windowIp)){
-			if(packetPort.equals(windowPort)){
-			
-				//window.chatBox.append("\nThem: " + message.trim() + "\n");
-
-				return true;
-	
-			}
-		}
-		return false;
-	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {}

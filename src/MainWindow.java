@@ -27,7 +27,7 @@ public class MainWindow implements ActionListener {
     public static JButton sendMessage;
     public static JButton closeButton;
     public static JTextField messageBox;
-    public static JTextArea chatBox;
+    public JTextArea chatBox;
     public static JTextField usernameChooser;
 
 
@@ -65,7 +65,6 @@ public class MainWindow implements ActionListener {
         closeButton = new JButton("Close");
         closeButton.addActionListener(new ActionListener() 
         {
-
             @Override
             public void actionPerformed(ActionEvent arg0) 
             {
@@ -123,11 +122,14 @@ public class MainWindow implements ActionListener {
         }
         //send message, append to chatbox and clear message box
 
-        System.out.println("Hello");
+        
 			mySocket.send(message, sendAddress, 64000);
-            chatBox.append("Me: "+message);
-            System.out.println( "Sent to " + sendAddress);
+            chatBox.append("Me: "+message + "\n") ;
+            System.out.println( message + " Sent to "  + sendAddress);
             // " was sent to: "+ sendAddress + " with the port number: "+portName+" \n");
             messageBox.setText("");
     }
+    public JTextArea getChatArea() {
+		return this.chatBox;
+	}
 }

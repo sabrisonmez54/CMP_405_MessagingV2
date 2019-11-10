@@ -124,7 +124,6 @@ public class Socket {
 			System.exit(-1);
 		}
 		mySocket.close();
-		MainWindow.chatBox.append("Socket Closed");
 		System.out.println("Socket Closed");
 	}
 
