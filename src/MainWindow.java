@@ -64,7 +64,7 @@ public class MainWindow implements ActionListener {
 
         closeButton = new JButton("Close");
         closeButton.addActionListener(new ActionListener() 
-        {
+        { //close button pressed
             @Override
             public void actionPerformed(ActionEvent arg0) 
             {
@@ -114,19 +114,15 @@ public class MainWindow implements ActionListener {
         try 
         {//get address to send
             sendAddress = InetAddress.getByName(ipName.trim());
-        
         }
         catch (UnknownHostException e1) 
         {
             e1.printStackTrace();
         }
         //send message, append to chatbox and clear message box
-
-        
 			mySocket.send(message, sendAddress, 64000);
             chatBox.append("Me: "+message + "\n") ;
             System.out.println( message + " Sent to "  + sendAddress);
-            // " was sent to: "+ sendAddress + " with the port number: "+portName+" \n");
             messageBox.setText("");
     }
     public JTextArea getChatArea() {

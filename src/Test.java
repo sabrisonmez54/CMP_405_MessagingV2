@@ -30,7 +30,6 @@ public class Test implements ActionListener
     public static InetAddress sendAddress;
     public static DatagramPacket packet;
     public static String message;
-	public static ArrayList<MainWindow> windowArray = new ArrayList<MainWindow>();
 	private static Map<InetAddress, MainWindow> windowMap = new HashMap<InetAddress, MainWindow>();
 	public static Socket mySocket = new Socket(64000);
 
@@ -57,62 +56,64 @@ public class Test implements ActionListener
 		startFrame.setVisible(true);
 		startFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		startButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// System.out.println(ipTextField.getText());
-				// System.out.println(portTextField.getText());
-
+		startButton.addActionListener(new ActionListener() 
+		{ //start button pressed
+			public void actionPerformed(ActionEvent e) 
+			{ //create new window with the details provided by user and then add to hashmap
 				MainWindow window = new MainWindow(ipTextField.getText(), portTextField.getText(), mySocket);
-				try {
+				try 
+				{ // get address to send to
 					sendAddress  = InetAddress.getByName(ipTextField.getText());
-				} catch (UnknownHostException e1) {
-					// TODO Auto-generated catch block
+				}
+				catch (UnknownHostException e1) 
+				{
 					e1.printStackTrace();
 				}
 				windowMap.put(sendAddress, window);
-				//windowArray.add(window);
 				window.display();
-	
-		 }});
+		 	}
+		});
 	}
 	
 	public static void main(String[] args) 
 	{
 		setWindow();
 	
-		while(true){
+		while(true)
+		{
  		//open receive thread
         packet = mySocket.receive();
         
          // if packet is received get message and display it    
 		 if (packet != null) 
 		 {
+			//get packet details
             byte[] inBuffer = packet.getData();
             message = new String(inBuffer);
-			
-			
 			String packetAdress = packet.getAddress().toString().substring(1);
 			String packetPort =Integer.toString(packet.getPort());
 			
-
-				if(windowMap.containsKey(packet.getAddress())){
+			//check if a window with same ip already exists
+			if(windowMap.containsKey(packet.getAddress()))
+				{ 
+				//find the chat window that exists and append the received message
 					MainWindow currentChat = windowMap.get(packet.getAddress());
 					currentChat.getChatArea().append("Them: " +message.trim() + "\n");
 				}
-				//System.out.println(packetAdress  + windowIp) ;
-				
-				else{
+			
+			else
+				{//if not create a new window and add to hashmap
 					MainWindow newWindow = new MainWindow(packetAdress,packetPort, mySocket);
 					windowMap.put(packet.getAddress(), newWindow);
 					newWindow.display();
 					newWindow.chatBox.append("Them: " + message.trim() + "\n");
 				}
-				
-				
+			
 			}
+		
 		}
-	}
 
+	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {}
