@@ -1,22 +1,16 @@
-import java.awt.LayoutManager;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.ListIterator;
 import java.util.Map;
 
-import javax.swing.JLabel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class Test implements ActionListener 
 {
@@ -29,17 +23,20 @@ public class Test implements ActionListener
 	public static InetAddress myAddress;
     public static InetAddress sendAddress;
     public static DatagramPacket packet;
-    public static String message;
+	public static String message;
+	public static String senderName;
+	public static String receiverName;
 	private static Map<InetAddress, MainWindow> windowMap = new HashMap<InetAddress, MainWindow>();
 	public static Socket mySocket = new Socket(64000);
 
 	public static void setWindow() 
 	{
-		ipLabel = new JLabel("IP address: ");
+		ipLabel = new JLabel("IP address you want to communicate with: ");
 		ipTextField = new JTextField(50);
-		portLabel = new JLabel("Port: ");
+		portLabel = new JLabel("Port Number: ");
 		portTextField = new JTextField(50);
-		startButton = new JButton("Start");
+		portTextField.setText("64000");
+		startButton = new JButton("Start Chatting");
 
 		JPanel startPanel = new JPanel();
 
@@ -49,7 +46,7 @@ public class Test implements ActionListener
 		startPanel.add(portTextField);
 		startPanel.add(startButton);
 
-		JFrame startFrame = new JFrame("Start Frame");
+		JFrame startFrame = new JFrame("My IP Address: " + mySocket.getMyAddress());
 		startFrame.setContentPane(startPanel);
 		startFrame.setSize(650, 200);
 		startFrame.setLocationRelativeTo(null);
@@ -74,15 +71,55 @@ public class Test implements ActionListener
 		 	}
 		});
 	}
+	public static void setWindow1() {
+		JPanel startChatPanel = new JPanel();
+		JLabel nameLabel = new JLabel("Name of person you want to communicate with: ");
+		JTextField nameTextField = new JTextField(50);
+		JButton startButton = new JButton("Start Chatting");
+
+		startChatPanel.add(nameLabel);
+		startChatPanel.add(nameTextField);
+		startChatPanel.add(startButton);
+		
+		JFrame startChatFrame = new JFrame("My IP Address: " + mySocket.getMyAddress());
+		startChatFrame.setContentPane(startChatPanel);
+		startChatFrame.setSize(650, 200);
+		startChatFrame.setLocationRelativeTo(null);
+		startChatFrame.setVisible(true);
+		startChatFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+		startButton.addActionListener(new ActionListener() 
+		{ 
+			InetAddress broadcastAdress = null;
+			public void actionPerformed(ActionEvent e) 
+			{ 
+				InetAddress broadcastAdress = null;
+			try 
+			{
+				broadcastAdress = InetAddress.getByName("255.255.255.255");
+			} 
+			catch (UnknownHostException e1) 
+			{
+				e1.printStackTrace();
+			}
+			String sendName = nameTextField.getText();
+			String myName = "Sabri";
+			String message = "????? " + sendName + " ##### " + myName;
+			System.out.println(message);
+			mySocket.send(message, broadcastAdress, 64000);
+		 	}
+		});
+	}
 	
 	public static void main(String[] args) 
 	{
-		setWindow();
+		
+		setWindow1();
 	
 		while(true)
 		{
  		//open receive thread
-        packet = mySocket.receive();
+		packet = mySocket.receive();
         
          // if packet is received get message and display it    
 		 if (packet != null) 
@@ -93,27 +130,52 @@ public class Test implements ActionListener
 			String packetAdress = packet.getAddress().toString().substring(1);
 			String packetPort =Integer.toString(packet.getPort());
 			
+			
+
+			if(CheckRequest(message)){
+				System.out.println("I received \n" + message);
+				System.out.println("sender name" + senderName);
+				System.out.println("sender IP" + packetAdress);
+				
+			}
 			//check if a window with same ip already exists
 			if(windowMap.containsKey(packet.getAddress()))
 				{ 
-				//find the chat window that exists and append the received message
+					//find the chat window that exists and append the received message
 					MainWindow currentChat = windowMap.get(packet.getAddress());
 					currentChat.getChatArea().append("Them: " +message.trim() + "\n");
 				}
 			
 			else
-				{//if not create a new window and add to hashmap
+				{
+					//if not create a new window and add to hashmap
 					MainWindow newWindow = new MainWindow(packetAdress,packetPort, mySocket);
 					windowMap.put(packet.getAddress(), newWindow);
 					newWindow.display();
 					newWindow.chatBox.append("Them: " + message.trim() + "\n");
 				}
-			
 			}
-		
 		}
-
 	}
+
+	private static boolean CheckRequest(String message) {
+		
+		if(message.startsWith("?????")) {
+			String[] splittedMessage = message.split(" ");
+			
+			  if(splittedMessage[2].equalsIgnoreCase("#####")){
+			       senderName = splittedMessage[1];
+				   receiverName = splittedMessage[3];
+			   
+			for (int i = 0; i < splittedMessage.length; i++) {
+				System.out.println(splittedMessage[i]);
+			}
+			  return true;
+			  }
+		}
+		return false;
+	}
+
 
 	@Override
 	public void actionPerformed(ActionEvent e) {}

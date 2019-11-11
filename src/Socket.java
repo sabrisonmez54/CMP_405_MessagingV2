@@ -4,8 +4,6 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -25,7 +23,9 @@ public class Socket {
 		this.myPortNumber = myPortNumber;		
 		try {
 			this.myAddress = InetAddress.getLocalHost();
-			this.mySocket = new DatagramSocket(myPortNumber, this.myAddress);
+
+			System.out.println(myAddress.getHostAddress());
+			this.mySocket = new DatagramSocket(myPortNumber);
 		} catch (Exception uhe) {
 			uhe.printStackTrace();
 			System.exit(-1);
