@@ -23,7 +23,6 @@ public class Socket {
 		this.myPortNumber = myPortNumber;		
 		try {
 			this.myAddress = InetAddress.getLocalHost();
-
 			System.out.println(myAddress.getHostAddress());
 			this.mySocket = new DatagramSocket(myPortNumber);
 		} catch (Exception uhe) {

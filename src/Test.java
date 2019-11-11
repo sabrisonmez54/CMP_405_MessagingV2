@@ -71,7 +71,8 @@ public class Test implements ActionListener
 		 	}
 		});
 	}
-	public static void setWindow1() {
+	public static void setWindow1() 
+	{
 		JPanel startChatPanel = new JPanel();
 		JLabel nameLabel = new JLabel("Name of person you want to communicate with: ");
 		JTextField nameTextField = new JTextField(50);
@@ -115,44 +116,46 @@ public class Test implements ActionListener
 	{
 		
 		setWindow1();
-	
+		//setWindow();
 		while(true)
 		{
  		//open receive thread
 		packet = mySocket.receive();
         
          // if packet is received get message and display it    
-		 if (packet != null) 
-		 {
+			if (packet != null) 
+			{
 			//get packet details
             byte[] inBuffer = packet.getData();
             message = new String(inBuffer);
 			String packetAdress = packet.getAddress().toString().substring(1);
-			String packetPort =Integer.toString(packet.getPort());
+			String packetPort = Integer.toString(packet.getPort());
 			
-			
-
-			if(CheckRequest(message)){
-				System.out.println("I received \n" + message);
-				System.out.println("sender name" + senderName);
-				System.out.println("sender IP" + packetAdress);
+			System.out.println("Someone BroadCasted:  " + message.trim());
 				
-			}
-			//check if a window with same ip already exists
-			if(windowMap.containsKey(packet.getAddress()))
-				{ 
+
+				if(CheckRequest(message))
+				{
+					System.out.println("I received \n" + message);
+					System.out.println("sender name" + senderName);
+					System.out.println("sender IP" + packetAdress);
+
+					//check if a window with same ip already exists
+					if(windowMap.containsKey(packet.getAddress()))
+					{ 
 					//find the chat window that exists and append the received message
 					MainWindow currentChat = windowMap.get(packet.getAddress());
 					currentChat.getChatArea().append("Them: " +message.trim() + "\n");
-				}
-			
-			else
-				{
+					}
+		
+					else
+					{
 					//if not create a new window and add to hashmap
 					MainWindow newWindow = new MainWindow(packetAdress,packetPort, mySocket);
 					windowMap.put(packet.getAddress(), newWindow);
 					newWindow.display();
 					newWindow.chatBox.append("Them: " + message.trim() + "\n");
+					}
 				}
 			}
 		}
@@ -160,22 +163,23 @@ public class Test implements ActionListener
 
 	private static boolean CheckRequest(String message) {
 		
-		if(message.startsWith("?????")) {
+		if(message.startsWith("?????")) 
+		{
 			String[] splittedMessage = message.split(" ");
 			
-			  if(splittedMessage[2].equalsIgnoreCase("#####")){
-			       senderName = splittedMessage[1];
-				   receiverName = splittedMessage[3];
+			  if(splittedMessage[2].equalsIgnoreCase("#####"))
+			  {
+			       receiverName = splittedMessage[1];
+				   senderName = splittedMessage[3];
+				   if(receiverName.equalsIgnoreCase("Sabri"))
+				   { return true; }
 			   
-			for (int i = 0; i < splittedMessage.length; i++) {
-				System.out.println(splittedMessage[i]);
-			}
-			  return true;
-			  }
+					for (int i = 0; i < splittedMessage.length; i++)
+					{ System.out.println(splittedMessage[i]); }
+				}
 		}
 		return false;
 	}
-
 
 	@Override
 	public void actionPerformed(ActionEvent e) {}
