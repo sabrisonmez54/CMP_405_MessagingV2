@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -17,21 +18,22 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-public class MainWindow implements ActionListener {
-    public  String ipName;
-    public  String portName;
-    public static JButton sendMessage;
-    public static JButton closeButton;
-    public static JTextField messageBox;
-    public JTextArea chatBox;
-    public static JTextField usernameChooser;
+public class MainWindow implements ActionListener 
+{
+    public  String              ipName;
+    public  String              portName;
+    public static String        message;
 
+    public JTextArea            chatBox;
+    public static JButton       sendMessage;
+    public static JButton       closeButton;
+    public static JTextField    messageBox;
+    public static JTextField    usernameChooser;
 
-    public static InetAddress myAddress;
-    public static InetAddress sendAddress;
+    public static InetAddress   myAddress;
+    public static InetAddress   sendAddress;
     public static DatagramPacket packet;
-    public static String message;
-    private static Socket mySocket;
+    private static Socket       mySocket;
 
     public MainWindow(String ipText, String portText, Socket socket) 
     {
@@ -43,7 +45,7 @@ public class MainWindow implements ActionListener {
 	public void display() 
     {
         String appName = "IP: [ " + ipName + " ]  " + " Port: [ " + portName + " ] ";
-        JFrame newFrame = new JFrame(appName);
+        JFrame appFrame = new JFrame(appName);
 
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout());
@@ -64,8 +66,18 @@ public class MainWindow implements ActionListener {
             @Override
             public void actionPerformed(ActionEvent arg0) 
             {
-                mySocket.close();
-                System.exit(0);
+                try 
+                {//get address to send
+                    sendAddress = InetAddress.getByName(ipName.trim());
+                }
+                catch (UnknownHostException e1) 
+                {
+                    e1.printStackTrace();
+                }
+                Test.getMap().remove(sendAddress);
+
+               appFrame.dispose();
+                //newFrame.isVisible(f);
             }
         });
 
@@ -95,11 +107,11 @@ public class MainWindow implements ActionListener {
 
         mainPanel.add(BorderLayout.SOUTH, southPanel);
 
-        newFrame.add(mainPanel);
-        newFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        newFrame.setSize(500, 300);
-        newFrame.setVisible(true);
-        newFrame.setLocationRelativeTo(null);
+        appFrame.add(mainPanel);
+        appFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        appFrame.setSize(500, 300);
+        appFrame.setVisible(true);
+        appFrame.setLocationRelativeTo(null);
     }
 
     @Override

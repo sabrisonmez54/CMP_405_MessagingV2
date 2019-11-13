@@ -14,19 +14,22 @@ import javax.swing.JTextField;
 
 public class Test implements ActionListener 
 {
-	private static JLabel 		ipLabel;
-	private static JTextField 	ipTextField;
-	private static JLabel 		portLabel;
-	private static JTextField 	portTextField;
-	private static JButton 		startButton;
+	private static JLabel 			ipLabel;
+	private static JTextField 		ipTextField;
+	private static JLabel 			portLabel;
+	private static JTextField 		portTextField;
+	private static JButton 			startButton;
 
-	public static InetAddress myAddress;
-    public static InetAddress sendAddress;
-    public static DatagramPacket packet;
-	public static String message;
-	public static String senderName;
-	public static String receiverName;
-	private static Map<InetAddress, MainWindow> windowMap = new HashMap<InetAddress, MainWindow>();
+	public static InetAddress 		myAddress;
+    public static InetAddress 		sendAddress;
+	public static DatagramPacket 	packet;
+	
+	public static String 			message;
+	public static String 			senderName;
+	public static String 			senderIP;
+	public static String 			receiverName;
+	
+	public static Map<InetAddress, MainWindow> windowMap = new HashMap<InetAddress, MainWindow>();
 	public static Socket mySocket = new Socket(64000);
 
 	public static void setWindow() 
@@ -119,49 +122,66 @@ public class Test implements ActionListener
 		//setWindow();
 		while(true)
 		{
- 		//open receive thread
-		packet = mySocket.receive();
+ 			//open receive thread
+			packet = mySocket.receive();
         
-         // if packet is received get message and display it    
+         	// if packet is received get message and display it    
 			if (packet != null) 
 			{
-			//get packet details
-            byte[] inBuffer = packet.getData();
-            message = new String(inBuffer);
-			String packetAdress = packet.getAddress().toString().substring(1);
-			String packetPort = Integer.toString(packet.getPort());
+				//get packet details
+            	byte[] inBuffer = packet.getData();
+            	message = new String(inBuffer);
+				String packetAdress = packet.getAddress().toString().substring(1);
+				//String packetPort = Integer.toString(packet.getPort());
 			
-			System.out.println("Someone BroadCasted:  " + message.trim());
+				System.out.println("Someone BroadCasted:  " + message.trim());
 				
-
-				if(CheckRequest(message))
+				if(message.startsWith("?????")) 
 				{
-					System.out.println("I received \n" + message);
-					System.out.println("sender name" + senderName);
-					System.out.println("sender IP" + packetAdress);
-
-					//check if a window with same ip already exists
-					if(windowMap.containsKey(packet.getAddress()))
-					{ 
-					//find the chat window that exists and append the received message
-					MainWindow currentChat = windowMap.get(packet.getAddress());
-					currentChat.getChatArea().append("Them: " +message.trim() + "\n");
-					}
-		
-					else
+					if(CheckBroadcast(message)) 
 					{
-					//if not create a new window and add to hashmap
-					MainWindow newWindow = new MainWindow(packetAdress,packetPort, mySocket);
-					windowMap.put(packet.getAddress(), newWindow);
-					newWindow.display();
-					newWindow.chatBox.append("Them: " + message.trim() + "\n");
+						System.out.println("I received \n" + message.trim());
+						System.out.println("sender name" + senderName);
+						System.out.println("sender IP" + packetAdress);
+	
+						InetAddress broadcastAdress = null;
+						try 
+						{
+							broadcastAdress = InetAddress.getByName(packetAdress);
+							myAddress = InetAddress.getLocalHost();
+						} 
+						catch (UnknownHostException e1) 
+						{
+							e1.printStackTrace();
+						}
+
+						mySocket.send("##### " +senderName+ " ##### " + myAddress.getHostAddress(), broadcastAdress , 64000);
+	
+						checkPacket(packet);
 					}
+				}
+				
+				if(message.startsWith("#####")) 
+				{
+					String[] splittedMessage = message.split(" ");
+			
+			  		if(splittedMessage[2].equalsIgnoreCase("#####"))
+			  		{
+			       		senderName = splittedMessage[1];
+					}
+					
+					checkPacket(packet);
+				}
+				
+				if(!message.startsWith("#####") && !message.startsWith("?????"))
+				{
+					checkPacket(packet);
 				}
 			}
 		}
 	}
 
-	private static boolean CheckRequest(String message) {
+	private static boolean CheckBroadcast(String message) {
 		
 		if(message.startsWith("?????")) 
 		{
@@ -171,14 +191,45 @@ public class Test implements ActionListener
 			  {
 			       receiverName = splittedMessage[1];
 				   senderName = splittedMessage[3];
-				   if(receiverName.equalsIgnoreCase("Sabri"))
-				   { return true; }
-			   
-					for (int i = 0; i < splittedMessage.length; i++)
-					{ System.out.println(splittedMessage[i]); }
+				   	if(receiverName.equalsIgnoreCase("Sabri")) 
+				   	{
+						return true; 
+					}
 				}
 		}
 		return false;
+	}
+
+
+	private static void checkPacket(DatagramPacket packet) 
+	{
+		//get packet details
+        byte[] inBuffer = packet.getData();
+        message = new String(inBuffer);
+		String packetAdress = packet.getAddress().toString().substring(1);
+		String packetPort = Integer.toString(packet.getPort());
+			
+		//check if a window with same ip already exists
+		if(windowMap.containsKey(packet.getAddress()))
+		{ 
+			//find the chat window that exists and append the received message
+			MainWindow currentChat = windowMap.get(packet.getAddress());
+			currentChat.getChatArea().append(senderName + ": " +message.trim() + "\n");
+		}
+
+		else
+		{
+			//if not create a new window and add to hashmap
+			MainWindow newWindow = new MainWindow(packetAdress,packetPort, mySocket);
+			windowMap.put(packet.getAddress(), newWindow);
+			newWindow.display();
+			newWindow.chatBox.append(senderName + ": " + message.trim() + "\n");
+		}
+	}
+
+	public static Map<InetAddress, MainWindow> getMap()
+	{
+		return windowMap;
 	}
 
 	@Override
