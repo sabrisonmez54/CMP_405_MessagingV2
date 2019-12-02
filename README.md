@@ -6,5 +6,5 @@ Using UDP packets and Sockets to communicate with any computer on the network, a
 
 ![photo](https://github.com/sabrisonmez54/JavaGUIMessagingApp/blob/master/screenShot1.png)
 
-[photo](https://github.com/sabrisonmez54/JavaGUIMessagingApp/blob/master/screenShot2.png)
+![photo](https://github.com/sabrisonmez54/JavaGUIMessagingApp/blob/master/screenShot2.png)
 
